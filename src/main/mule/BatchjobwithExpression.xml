@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="BatchjobwithExpressionFlow" doc:id="1b7dcdc8-a728-4be0-ae02-ac08feba4df0" >
+		<http:listener doc:name="Listener" doc:id="ce8245d9-0784-41d9-a8be-3ef10ab80d4c" config-ref="HTTP_Listener_config" path="/b2"/>
+		<set-payload doc:name='[1,2,"a",4,5,"A","C"]' doc:id="0fae1b1e-db7b-47db-8923-6ed1f6e1c15a" value='#[[1,2,"a",4,5,"A","C"]]'/>
+		<batch:job jobName="BatchjobwithExpressionBatch_Job" doc:id="0d7b54d3-edbd-463d-81ca-5983185c4130" maxFailedRecords="10">
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="b1e967ae-32c4-45ee-8317-87b6c93bc142" acceptExpression="#[ payload is Number ]" acceptPolicy="ALL">
+					<set-payload value="#[payload * 10]" doc:name="Set Payload" doc:id="69c156cb-bde4-406a-97ac-f96b2472b2d8" />
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="dbf60a4b-d2e4-4b72-8b00-11d75df9d262" size="2">
+						<logger level="INFO" doc:name="Logger" doc:id="e8206152-0120-40e3-aadd-dfe7852b45a4" message='#[payload]'/>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="e637697b-2f16-4c79-9c23-13b1f7eba075" message="#[payload]"/>
+			</batch:on-complete>
+		</batch:job>
+		<ee:transform doc:name="Transform Message" doc:id="50944496-e85a-452c-8cc8-37bc2772a1c9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

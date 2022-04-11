@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="BatchJobwithAdditonalBAtchstepFlow" doc:id="271da2ac-92c8-4032-abf5-376caf0d2312" >
+		<http:listener doc:name="Listener" doc:id="301ec730-92df-4290-a987-1ff26b78ff0d" config-ref="HTTP_Listener_config" path="/b3"/>
+		<set-payload value='#[[1,2,"a",4,5,"b","c",6]]' doc:name='[1,2,"a",4,5,"b","c",6]' doc:id="3b35f7e5-0ecc-43be-a5c8-b02d65f7d748" />
+		<batch:job jobName="BatchJobwithAdditonalBAtchstepBatch_Job" doc:id="8b59f161-530d-4a6b-ae21-38ef1e05f86c" maxFailedRecords="10">
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="faa6df13-f040-419d-8eda-8255fd36eb97">
+					<set-payload value="#[payload * 10]" doc:name="Set Payload" doc:id="f0d0449f-c2f6-4bce-8f84-dbfa8bb557b1" />
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="87381591-6143-4bb3-8582-22eba4ceb521" size="2">
+						<logger level="INFO" doc:name="Logger" doc:id="4bda6bd9-d408-4313-93f4-9cac0e150902" message="#[payload]"/>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step name="Batch_Step1" doc:id="f5b4714d-8c99-4841-bf42-d079f36cf100" acceptPolicy="ONLY_FAILURES">
+					<logger level="INFO" doc:name="Logger" doc:id="c0e3c0be-9e8f-4516-9d02-27b667d15be1" message='#["the alphebet is ::: " ++ payload]'/>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="da14f55d-50bc-443d-8afb-75a6027acb55" message="#[payload]"/>
+			</batch:on-complete>
+		</batch:job>
+		<ee:transform doc:name="Transform Message" doc:id="e96abfd1-4982-404b-9e78-7528c3d74faa" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

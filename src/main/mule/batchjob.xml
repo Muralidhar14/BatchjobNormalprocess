@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="98080220-e6a4-46b8-9e1c-0f2586dfc45f" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="btachjobFlow" doc:id="130a2b59-9a88-4828-9db5-2589c343e51b" >
+		<http:listener doc:name="Listener" doc:id="61de1dd4-1d1b-4803-bb58-361e95fffa67" config-ref="HTTP_Listener_config" path="/b1"/>
+		<set-payload value='#[[1,2,"a",4,5,"A","C"]]' doc:name='[1,2,"a",4,"A","C"]' doc:id="b6b034fe-1bb6-4783-ab65-17ddef2effdb" />
+		<batch:job jobName="btachjobBatch_Job" doc:id="22d2e867-b15d-4331-b335-bf36042709c4" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="a15bd16b-8af4-45b4-9aa0-5968dbf87b21" acceptPolicy="ALL">
+					<set-payload doc:name="payload * 10" doc:id="172ce275-a714-45b4-84b9-f9259071bedd" value="#[payload * 10]"/>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="e1fef1fc-33a6-473d-a910-f44949a16ef7" size="2">
+						<logger level="INFO" doc:name="Logger" doc:id="8bd4803c-6f68-4a43-8fc1-7f2a577e7ffe" message='#["Batch step 1 values are ::: " ++ payload]'/>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="12622224-feef-499b-ae21-1a46242d7ad1" message="#[payload]"/>
+			</batch:on-complete>
+		</batch:job>
+		<ee:transform doc:name="Transform Message" doc:id="4875486d-1325-49fb-b9e6-ee9a50509838" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
